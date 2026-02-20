@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="asset/banner.png" alt="Handwritten Digit Recognition Banner" width="100%">
+</p>
+
 # 🚦 AI Traffic Monitoring & Congestion Prediction System
 
 ![Python](https://img.shields.io/badge/Python-3.10-blue?logo=python)
