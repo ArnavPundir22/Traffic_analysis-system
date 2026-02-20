@@ -10,7 +10,7 @@ from traffic_predict import traffic_status, save_traffic_log
 
 
 # Load YOLO model
-model = YOLO("yolov8n.pt")
+model = YOLO("yolov8s.pt")
 
 # Load trained LSTM + scaler
 lstm_model = load_model("traffic_lstm_model.h5", compile=False)
