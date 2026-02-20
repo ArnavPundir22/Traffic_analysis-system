@@ -1,64 +1,41 @@
-# traffic_predict.py
-# -------------------------
-# Traffic Prediction Module
-# -------------------------
-
 import datetime
 
 
-# 🚦 Function to Predict Traffic Condition
 def traffic_status(vehicle_count):
     """
-    Predict traffic level based on vehicle count.
-
-    Parameters:
-        vehicle_count (int): Total vehicles detected/counted
-
-    Returns:
-        str: Traffic condition message
+    Returns traffic condition based on number of vehicles.
     """
 
     if vehicle_count < 10:
-        return "FREE ROAD 🟢"
-    
+        return "FREE ROAD"
     elif vehicle_count < 25:
-        return "MODERATE TRAFFIC 🟡"
-    
+        return "MODERATE TRAFFIC"
     else:
-        return "HEAVY TRAFFIC 🔴"
+        return "HEAVY TRAFFIC"
 
 
-# 📝 Function to Save Traffic Logs (Optional)
 def save_traffic_log(vehicle_count, filename="traffic_log.csv"):
     """
-    Save traffic data into a CSV file with timestamp.
-
-    Parameters:
-        vehicle_count (int): Number of vehicles
-        filename (str): CSV log file name
+    Saves vehicle count and traffic status with timestamp.
     """
 
     status = traffic_status(vehicle_count)
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # Current date and time
-    now = datetime.datetime.now()
-    timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
+    with open(filename, "a") as f:
+        f.write(f"{timestamp},{vehicle_count},{status}\n")
 
-    # Write to CSV
-    with open(filename, "a") as file:
-        file.write(f"{timestamp},{vehicle_count},{status}\n")
-
-    print("✅ Traffic log saved!")
+    print("Traffic log saved.")
 
 
-# 🔥 Main Test (Run this file separately)
+# simple testing
 if __name__ == "__main__":
-    print("\n🚗 Traffic Prediction System\n")
 
-    count = int(input("Enter Vehicle Count: "))
+    print("Traffic Prediction Test")
 
-    result = traffic_status(count)
-    print("\n📍 Traffic Condition:", result)
-
-    # Save log
-    save_traffic_log(count)
+    try:
+        count = int(input("Enter vehicle count: "))
+        print("Traffic Condition:", traffic_status(count))
+        save_traffic_log(count)
+    except ValueError:
+        print("Please enter a valid number.")
