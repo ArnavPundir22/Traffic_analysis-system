@@ -1,148 +1,217 @@
-# 🚦 AI Traffic Monitoring & Prediction System
+# 🚦 AI Traffic Monitoring & Congestion Prediction System
 
-A computer vision-based traffic analysis system that detects, tracks,
-and analyzes vehicles from video footage using YOLOv8 and LSTM.
-
-------------------------------------------------------------------------
-
-## 📌 Project Overview
-
-This project performs:
-
--   🚗 Vehicle detection using YOLOv8\
--   🆔 Object tracking with built-in YOLO tracker\
--   📏 Real-time speed estimation\
--   ⚠️ Overspeed detection with image capture\
--   📊 Traffic density classification\
--   🤖 LSTM-based traffic prediction\
--   📝 Automatic CSV logging
-
-The system processes recorded road footage and displays real-time
-analytics on screen.
+![Python](https://img.shields.io/badge/Python-3.10-blue?logo=python)
+![OpenCV](https://img.shields.io/badge/OpenCV-Computer%20Vision-green?logo=opencv)
+![YOLOv8](https://img.shields.io/badge/YOLOv8-Ultralytics-red)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-LSTM-orange?logo=tensorflow)
+![Status](https://img.shields.io/badge/Project-Active-brightgreen)
 
 ------------------------------------------------------------------------
 
-## 🛠 Technologies Used
+## 📌 Overview
 
--   Python\
--   OpenCV\
--   Ultralytics YOLOv8\
--   TensorFlow / Keras\
--   NumPy\
--   Pandas\
--   Scikit-learn
+This project is a real-time AI-based traffic monitoring system that
+performs:
+
+-   Vehicle detection using YOLOv8\
+-   Object tracking with persistent IDs\
+-   Speed estimation from video frames\
+-   Overspeed violation capture\
+-   Traffic density classification\
+-   LSTM-based next-step traffic forecasting
+
+The system integrates computer vision and deep learning to provide
+end-to-end traffic analytics.
 
 ------------------------------------------------------------------------
 
-## 📂 Project Structure
+# 🏗 System Architecture
+
+## High-Level Pipeline
+
+    Video Input
+        ↓
+    YOLOv8 Object Detection
+        ↓
+    Multi-Object Tracking
+        ↓
+    Centroid Extraction
+        ↓
+    Speed Estimation
+        ↓
+    Vehicle Counting
+        ↓
+    Traffic Classification
+        ↓
+    LSTM Prediction
+        ↓
+    Logging & Storage
+
+------------------------------------------------------------------------
+
+# 🧠 Core Components
+
+## 1️⃣ Detection & Tracking
+
+-   Model: YOLOv8 (Ultralytics)
+-   Tracker: Built-in YOLO tracker
+-   Classes filtered:
+    -   car
+    -   truck
+    -   bus
+    -   motorcycle
+
+Tracking ensures stable ID assignment across frames.
+
+------------------------------------------------------------------------
+
+## 2️⃣ Speed Estimation (Mathematical Model)
+
+Speed is calculated using centroid displacement between consecutive
+frames.
+
+### Step 1: Pixel Displacement
+
+Δp = \|y_current − y_previous\|
+
+### Step 2: Convert Pixels to Meters
+
+meters = Δp / pixels_per_meter
+
+### Step 3: Speed in m/s
+
+v = meters / frame_time
+
+### Step 4: Convert to km/h
+
+speed_kmph = v × 3.6
+
+Where:
+
+-   frame_time = 1 / FPS\
+-   pixels_per_meter is calibration constant
+
+Final formula:
+
+    speed = (pixel_distance / pixels_per_meter) / frame_time × 3.6
+
+To reduce noise, weighted smoothing is applied:
+
+    v_final = 0.7 × v_previous + 0.3 × v_current
+
+------------------------------------------------------------------------
+
+## 3️⃣ Traffic Classification Logic
+
+Rule-based congestion classification:
+
+  Vehicle Count   Status
+  --------------- ------------------
+  \< 10           FREE ROAD
+  10--24          MODERATE TRAFFIC
+  ≥ 25            HEAVY TRAFFIC
+
+------------------------------------------------------------------------
+
+## 4️⃣ LSTM-Based Traffic Forecasting
+
+The LSTM model predicts the next vehicle count using historical sequence
+data.
+
+### Training Steps:
+
+1.  Load dataset (traffic.csv)
+2.  Sort by DateTime
+3.  Normalize using MinMaxScaler
+4.  Create sequences (length = 5)
+5.  Train LSTM network
+6.  Save model & scaler
+
+### Model Architecture:
+
+-   LSTM (64 units)
+-   Dense (1 output)
+-   Optimizer: Adam
+-   Loss: Mean Squared Error
+
+The model learns temporal patterns in traffic flow.
+
+------------------------------------------------------------------------
+
+# 📂 Project Structure
 
     Traffic_analysis-system/
     │
-    ├── vehicle_detect.py        # Main traffic monitoring system
-    ├── traffic_predict.py       # Rule-based traffic classification + logging
-    ├── train_traffic_model.py   # LSTM training script
-    ├── traffic_lstm_model.h5    # Saved trained LSTM model
-    ├── traffic_scaler.pkl       # Saved MinMax scaler
-    ├── traffic.csv              # Dataset used for training
-    ├── traffic_log.csv          # Generated traffic logs
-    ├── yolov8n.pt               # YOLOv8 pretrained model
-    └── violations/              # Overspeed vehicle captures
+    ├── vehicle_detect.py
+    ├── traffic_predict.py
+    ├── train_traffic_model.py
+    ├── traffic_lstm_model.h5
+    ├── traffic_scaler.pkl
+    ├── traffic.csv
+    ├── traffic_log.csv
+    ├── yolov8n.pt
+    └── violations/
 
 ------------------------------------------------------------------------
 
-## ⚙️ Installation
+# ⚙️ Installation
 
-Clone the repository:
-
-    git clone https://github.com/your-username/Traffic_analysis-system.git
-    cd Traffic_analysis-system
-
-Install required packages:
-
-    pip install opencv-python ultralytics tensorflow scikit-learn pandas joblib
+``` bash
+git clone <repository-link>
+cd Traffic_analysis-system
+pip install opencv-python ultralytics tensorflow scikit-learn pandas joblib
+```
 
 ------------------------------------------------------------------------
 
-## ▶️ How to Run
+# ▶️ Usage
 
-### 1️⃣ Train LSTM Model (Optional)
+### Train Model
 
-If you want to retrain the prediction model:
+``` bash
+python train_traffic_model.py
+```
 
-    python train_traffic_model.py
+### Run Monitoring System
 
-This generates:
+``` bash
+python vehicle_detect.py
+```
 
--   `traffic_lstm_model.h5`
--   `traffic_scaler.pkl`
-
-------------------------------------------------------------------------
-
-### 2️⃣ Run Traffic Monitoring System
-
-    python vehicle_detect.py
-
-Press **Q** to exit.
+Press `Q` to exit.
 
 ------------------------------------------------------------------------
 
-## 📊 System Features
+# 📊 Performance Considerations
 
-### 🚗 Vehicle Detection
+  Model     Accuracy        Speed
+  --------- --------------- ----------------
+  yolov8n   Fast            Lower accuracy
+  yolov8s   Balanced        Recommended
+  yolov8m   High accuracy   Slower
 
-Uses YOLOv8 Nano model for real-time object detection.
-
-### 📏 Speed Estimation
-
-Speed is calculated using pixel displacement between frames and
-calibrated conversion to meters.
-
-### ⚠️ Overspeed Detection
-
-Vehicles exceeding the speed limit are: - Marked on screen - Saved in
-`violations/` folder
-
-### 📈 Traffic Classification
-
-Rule-based classification: - FREE ROAD - MODERATE TRAFFIC - HEAVY
-TRAFFIC
-
-### 🤖 LSTM Prediction
-
-Predicts next traffic count based on previous time sequence data.
+Speed estimation accuracy depends on: - Proper calibration - Stable
+FPS - Camera angle
 
 ------------------------------------------------------------------------
 
-## 🧠 How Speed is Calculated
+# 🚀 Future Improvements
 
-1.  Vehicle centroid is tracked across frames\
-2.  Vertical pixel displacement is measured\
-3.  Pixels converted to meters\
-4.  Speed calculated using FPS timing
-
-Calibration factor:
-
-    pixels_per_meter = 40  # Adjust based on camera setup
-
-------------------------------------------------------------------------
-
-## 📌 Future Improvements
-
--   Perspective transformation for more accurate speed
--   Lane-wise analytics
--   Real-time dashboard (Streamlit / Flask)
--   Live webcam integration
+-   Perspective transformation (bird's-eye view)
+-   Lane-wise speed analytics
+-   Web dashboard (Streamlit/Flask)
+-   Custom-trained YOLO on traffic dataset
 -   Advanced congestion forecasting model
 
 ------------------------------------------------------------------------
 
-## 👨‍💻 Author
+# 👨‍💻 Author
 
-Developed as a Computer Vision and AI project focused on traffic
-analytics and predictive modeling.
+AI & Computer Vision Project focused on real-time analytics and
+predictive modeling.
 
 ------------------------------------------------------------------------
 
-## ⭐ If You Found This Useful
+# ⭐ License
 
-Consider giving the repository a star and exploring improvements.
+This project is for educational and research purposes.
